@@ -406,7 +406,7 @@
     </div>
 
     <div class="tier-box">
-      📦 <strong>수량별 가격 안내</strong> (75g + 80g 합산 수량 기준)<br>
+      📦 <strong>수량별 가격 안내</strong> (75g, 80g 각각 수량 기준)<br>
       75g: 1~9박스 <strong>₩22,000</strong> &nbsp;|&nbsp; 10~29박스 <strong>₩21,300</strong> &nbsp;|&nbsp; 30박스 이상 <strong>₩20,700</strong><br>
       80g: 1~9박스 <strong>₩23,200</strong> &nbsp;|&nbsp; 10~29박스 <strong>₩22,500</strong> &nbsp;|&nbsp; 30박스 이상 <strong>₩21,800</strong>
     </div>
@@ -518,8 +518,8 @@
 
   function update() {
     const total = qty[75] + qty[80];
-    const unit75 = getUnitPrice(75, total);
-    const unit80 = getUnitPrice(80, total);
+    const unit75 = getUnitPrice(75, qty[75]);
+    const unit80 = getUnitPrice(80, qty[80]);
 
     const sub75 = qty[75] * unit75;
     const sub80 = qty[80] * unit80;
@@ -531,15 +531,17 @@
     document.getElementById('s-80').textContent = fmt(sub80);
     document.getElementById('s-total').textContent = fmt(grand);
 
-    // 구간 할인 표시
+    // 구간 할인 표시 (각각 기준)
     const discRow = document.getElementById('disc-row');
-    if (total >= 30) {
+    const hasDisc = qty[75] >= 10 || qty[80] >= 10 || qty[75] >= 30 || qty[80] >= 30;
+    if (hasDisc) {
       discRow.style.display = 'flex';
-      document.getElementById('disc-label').textContent = '30박스 이상 단가 적용';
-      document.getElementById('s-disc').textContent = '';
-    } else if (total >= 10) {
-      discRow.style.display = 'flex';
-      document.getElementById('disc-label').textContent = '10~29박스 단가 적용';
+      const labels = [];
+      if (qty[75] >= 30) labels.push('75g 30박스↑');
+      else if (qty[75] >= 10) labels.push('75g 10~29박스');
+      if (qty[80] >= 30) labels.push('80g 30박스↑');
+      else if (qty[80] >= 10) labels.push('80g 10~29박스');
+      document.getElementById('disc-label').textContent = labels.join(', ') + ' 단가 적용';
       document.getElementById('s-disc').textContent = '';
     } else {
       discRow.style.display = 'none';
@@ -573,12 +575,17 @@
     if (total === 0) { alert('제품을 1박스 이상 선택해 주세요.'); return; }
 
 
-    const unit75 = getUnitPrice(75, total);
-    const unit80 = getUnitPrice(80, total);
+    const unit75 = getUnitPrice(75, qty[75]);
+    const unit80 = getUnitPrice(80, qty[80]);
     const sub75 = qty[75] * unit75;
     const sub80 = qty[80] * unit80;
     const grand = sub75 + sub80;
-    const disc = total >= 30 ? {label: '30박스 이상 단가'} : total >= 10 ? {label: '10~29박스 단가'} : null;
+    const discLabels = [];
+    if (qty[75] >= 30) discLabels.push('75g 30박스↑');
+    else if (qty[75] >= 10) discLabels.push('75g 10~29박스');
+    if (qty[80] >= 30) discLabels.push('80g 30박스↑');
+    else if (qty[80] >= 10) discLabels.push('80g 10~29박스');
+    const disc = discLabels.length > 0 ? {label: discLabels.join(', ')} : null;
 
     const btn = document.querySelector('.submit-btn');
     btn.textContent = '제출 중...';
